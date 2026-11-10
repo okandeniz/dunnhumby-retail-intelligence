@@ -4,7 +4,16 @@ Explore how households shop, which customers may stop visiting, how shoppers use
 
 ## Start with Docker
 
-From the project root, start Docker Desktop in Linux container mode. Keep the `models/` and `data/processed/` folders beside `compose.yaml`.
+For a first-time setup, open a terminal in the folder where you want to keep the project. Clone the repository and enter the folder that contains `compose.yaml`:
+
+```powershell
+git clone https://github.com/okandeniz/dunnhumby-retail-intelligence.git
+cd dunnhumby-retail-intelligence
+```
+
+Copy the prepared model and data files into `models/` and `data/processed/` inside the cloned folder. The dashboard needs files that are stored separately from GitHub. See [Required artifacts](#required-artifacts) for the file list.
+
+Start Docker Desktop in Linux container mode. From the project folder, run:
 
 ```powershell
 docker compose up --build -d
