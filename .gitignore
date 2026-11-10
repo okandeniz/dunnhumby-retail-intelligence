@@ -59,3 +59,6 @@ data/external/
 # Local output folders
 outputs/
 logs/
+
+# Local command notes
+/terminal_commands.txt
