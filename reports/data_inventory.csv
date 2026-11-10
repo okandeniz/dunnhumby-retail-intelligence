@@ -1,0 +1,9 @@
+file_name,rows,columns,size_mb
+campaign_desc.csv,30,4,0.0
+campaign_table.csv,7208,3,0.09
+causal_data.csv,36786524,5,663.62
+coupon.csv,124548,3,2.69
+coupon_redempt.csv,2318,4,0.05
+hh_demographic.csv,801,8,0.04
+product.csv,92353,7,6.13
+transaction_data.csv,2595732,12,135.18

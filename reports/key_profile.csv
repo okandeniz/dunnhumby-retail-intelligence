@@ -1,0 +1,7 @@
+table,candidate_key,rows,null_key_rows,duplicate_key_rows
+product,PRODUCT_ID,92353,0,0
+campaign_desc,CAMPAIGN,30,0,0
+campaign_table,"household_key, CAMPAIGN",7208,0,0
+coupon,"COUPON_UPC, PRODUCT_ID, CAMPAIGN",124548,0,5164
+hh_demographic,household_key,801,0,0
+coupon_redempt,"household_key, DAY, COUPON_UPC, CAMPAIGN",2318,0,0

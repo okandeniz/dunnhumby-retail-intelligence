@@ -1,0 +1,7 @@
+feature,mean_abs_shap
+baskets_last_30d,0.6444564605261835
+baskets_prev_30d,0.558683714545108
+recency,0.4616045309141005
+purchase_frequency,0.38463640055020576
+avg_basket_value,0.13144229933404394
+has_purchase_365d,0.018699551481810843

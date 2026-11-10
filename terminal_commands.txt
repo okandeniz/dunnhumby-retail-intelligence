@@ -1,0 +1,19 @@
+uv venv --python 3.11
+
+.\.venv\Scripts\Activate.ps1
+
+uv sync
+
+Copy-Item .env.example .env
+
+uv run python -c "import pandas, numpy, sqlalchemy, pymysql; print('Environment OK')"
+
+-- Creating a MySQL database
+Get-Service *mysql*
+
+git init -b main
+
+git status
+
+git rev-parse --show-toplevel
+

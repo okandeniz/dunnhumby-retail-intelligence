@@ -1,0 +1,106 @@
+USE dunnhumby_retail;
+
+-- 1. Campaign descriptions
+CREATE TABLE IF NOT EXISTS raw_campaign_desc (
+	CAMPAIGN INT NOT NULL,
+    DESCRIPTION VARCHAR(20),
+    START_DAY INT,
+    END_DAY INT,
+    PRIMARY KEY (CAMPAIGN)
+) ENGINE=InnoDB;
+
+-- 2. Campaign participation
+CREATE TABLE IF NOT EXISTS raw_campaign_table (
+    DESCRIPTION VARCHAR(20),
+    household_key INT NOT NULL,
+    CAMPAIGN INT NOT NULL,
+    PRIMARY KEY (household_key, CAMPAIGN)
+) ENGINE=InnoDB;
+
+-- 3. Product information
+CREATE TABLE IF NOT EXISTS raw_product (
+    PRODUCT_ID BIGINT NOT NULL,
+    MANUFACTURER INT,
+    DEPARTMENT VARCHAR(255),
+    BRAND VARCHAR(50),
+    COMMODITY_DESC VARCHAR(255),
+    SUB_COMMODITY_DESC VARCHAR(255),
+    CURR_SIZE_OF_PRODUCT VARCHAR(255),
+    PRIMARY KEY (PRODUCT_ID)
+) ENGINE=InnoDB;
+
+-- 4. Household demographics
+CREATE TABLE IF NOT EXISTS raw_hh_demographic (
+    AGE_DESC VARCHAR(100),
+    MARITAL_STATUS_CODE VARCHAR(20),
+    INCOME_DESC VARCHAR(100),
+    HOMEOWNER_DESC VARCHAR(100),
+    HH_COMP_DESC VARCHAR(100),
+    HOUSEHOLD_SIZE_DESC VARCHAR(100),
+    KID_CATEGORY_DESC VARCHAR(100),
+    household_key INT NOT NULL,
+    PRIMARY KEY (household_key)
+) ENGINE=InnoDB;
+
+-- 5. Coupon definitions
+CREATE TABLE IF NOT EXISTS raw_coupon (
+    row_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    COUPON_UPC BIGINT NOT NULL,
+    PRODUCT_ID BIGINT NOT NULL,
+    CAMPAIGN INT NOT NULL,
+    PRIMARY KEY (row_id)
+) ENGINE=InnoDB;
+
+-- 6. Coupon redemption events
+CREATE TABLE IF NOT EXISTS raw_coupon_redempt (
+    household_key INT NOT NULL,
+    `DAY` INT NOT NULL,
+    COUPON_UPC BIGINT NOT NULL,
+    CAMPAIGN INT NOT NULL,
+    PRIMARY KEY (
+        household_key,
+        `DAY`,
+        COUPON_UPC,
+        CAMPAIGN
+    )
+) ENGINE=InnoDB;
+
+
+-- 7. Transactions
+CREATE TABLE IF NOT EXISTS raw_transaction_data (
+    row_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    household_key INT,
+    BASKET_ID BIGINT,
+    `DAY` INT,
+    PRODUCT_ID BIGINT,
+    QUANTITY BIGINT,
+    SALES_VALUE DECIMAL(18,4),
+    STORE_ID INT,
+    RETAIL_DISC DECIMAL(18,4),
+    TRANS_TIME INT,
+    WEEK_NO INT,
+    COUPON_DISC DECIMAL(18,4),
+    COUPON_MATCH_DISC DECIMAL(18,4),
+    PRIMARY KEY (row_id)
+) ENGINE=InnoDB;
+
+-- 8. Promotion information
+CREATE TABLE IF NOT EXISTS raw_causal_data (
+    PRODUCT_ID BIGINT,
+    STORE_ID INT,
+    WEEK_NO INT,
+    `display` VARCHAR(10),
+    `mailer` VARCHAR(10)
+) ENGINE=InnoDB;
+
+-- Verify table creation
+SHOW TABLES LIKE 'raw_%';
+
+
+
+
+
+
+
+
+

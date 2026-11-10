@@ -1,0 +1,53 @@
+
+[project]
+name = "dunnhumby-retail-intelligence"
+version = "0.1.0"
+description = "End-to-end retail data science and machine learning project"
+requires-python = ">=3.11,<3.12"
+
+[dependency-groups]
+api = [
+    "fastapi>=0.115,<1",
+    "pydantic>=2.10,<3",
+    "uvicorn>=0.30,<1",
+    "joblib>=1.4,<2",
+    "numpy>=1.26,<3.0",
+    "pandas>=2.2,<3.0",
+    "scipy>=1.12,<2.0",
+    "scikit-learn==1.9.1",
+]
+dashboard = [
+    "streamlit>=1.46,<2",
+    "plotly>=6,<7",
+    "pandas>=2.2,<3.0",
+    "requests>=2.32,<3",
+    "python-dotenv>=1,<2",
+]
+dev = ["pytest>=8,<10", "httpx2", "ruff>=0.11,<1", "xgboost==3.2.0"]
+research = [
+    {include-group = "api"},
+    "matplotlib>=3.8,<4.0",
+    "seaborn>=0.13,<1.0",
+    "sqlalchemy>=2.0,<3.0",
+    "pymysql>=1.1,<2.0",
+    "python-dotenv>=1.0,<2.0",
+    "jupyterlab>=4.2,<5.0",
+    "ipykernel>=6.29,<8.0",
+    "lifetimes==0.11.3",
+    "statsmodels==0.15.0",
+    "mlxtend>=0.25.0",
+    "lightgbm>=4.7.0",
+    "optuna>=5.0.0",
+    "shap==0.51.0",
+    "numba==0.68.1",
+    "xgboost==3.2.0",
+    "tensorflow>=2.21.0",
+]
+
+[tool.uv]
+package = false
+default-groups = ["api", "dashboard", "dev"]
+environments = [
+    "sys_platform == 'win32'",
+    "sys_platform == 'linux'",
+]

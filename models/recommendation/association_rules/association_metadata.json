@@ -1,0 +1,14 @@
+{
+    "model_name": "FP-Growth Association Rules",
+    "training_end_day": 621,
+    "min_support": 0.002,
+    "min_confidence": 0.1,
+    "min_lift": 1.2,
+    "max_itemset_length": 2,
+    "training_interactions": 2178447,
+    "training_baskets": 217341,
+    "frequent_products": 575,
+    "frequent_itemsets": 711,
+    "association_rules": 146,
+    "customers": 2498
+}

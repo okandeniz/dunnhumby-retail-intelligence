@@ -1,0 +1,24 @@
+{
+    "model_name": "BG-NBD",
+    "model_type": "Customer Purchase Prediction",
+    "snapshot_day": 712,
+    "rfm_lookback_days": 365,
+    "training_days": 275,
+    "training_start_day": 437,
+    "training_end_day": 711,
+    "forecast_horizon_days": 90,
+    "penalizer_coef": 0.01,
+    "training_customers": 2466,
+    "total_customers": 2500,
+    "forecasted_customers": 2466,
+    "customers_without_forecast": 34,
+    "corrected_predictions": 57,
+    "total_expected_revenue": 1147627.987560599,
+    "monetary_method": "Historical Monetary",
+    "model_parameters": {
+        "r": 1.3119803432485075,
+        "alpha": 9.033679692404721,
+        "a": 0.005477561332293544,
+        "b": 0.6347097781827606
+    }
+}

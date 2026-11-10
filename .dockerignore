@@ -1,0 +1,13 @@
+**
+!Dockerfile.api
+!Dockerfile.streamlit
+!pyproject.toml
+!uv.lock
+!api/
+!api/**/*.py
+!src/
+!src/**/*.py
+!streamlit_app/
+!streamlit_app/**/*.py
+!.streamlit/
+!.streamlit/config.toml

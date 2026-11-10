@@ -1,0 +1,7 @@
+relationship,checked_rows,unmatched_rows
+campaign_table -> campaign_desc,7208,0
+coupon -> campaign_desc,124548,0
+coupon -> product,124548,0
+coupon_redempt -> campaign_desc,2318,0
+coupon_redempt -> coupon,2318,0
+transaction_data -> product,2595732,0

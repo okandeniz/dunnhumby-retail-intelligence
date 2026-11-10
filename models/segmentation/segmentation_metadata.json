@@ -1,0 +1,26 @@
+{
+    "model_name": "K-Means Customer Segmentation",
+    "snapshot_day": 712,
+    "lookback_days": 365,
+    "observation_start_day": 347,
+    "observation_end_day": 711,
+    "n_clusters": 2,
+    "random_state": 42,
+    "n_init": 20,
+    "selected_features": [
+        "purchase_frequency",
+        "avg_basket_value",
+        "recency"
+    ],
+    "preprocessing": [
+        "Log1p",
+        "StandardScaler"
+    ],
+    "total_customers": 2500,
+    "clustered_customers": 2479,
+    "unclustered_customers": 21,
+    "cluster_names": {
+        "0": "Frequent & Recent Shoppers",
+        "1": "Less Active Shoppers"
+    }
+}

@@ -1,0 +1,61 @@
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Test and lint caches
+.pytest_cache/
+.ruff_cache/
+.uv-cache/
+.streamlit/secrets.toml
+.mypy_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Large datasets and generated data
+data/raw/
+data/interim/
+data/processed/
+data/external/
+
+# Serialized machine learning models
+*.joblib
+*.pkl
+*.pickle
+*.h5
+*.keras
+
+# Local output folders
+outputs/
+logs/

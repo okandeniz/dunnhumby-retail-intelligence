@@ -1,0 +1,38 @@
+{
+    "model_name": "Balanced Logistic Regression",
+    "features": [
+        "purchase_frequency",
+        "avg_basket_value",
+        "recency",
+        "baskets_last_30d",
+        "baskets_prev_30d",
+        "has_purchase_365d"
+    ],
+    "threshold": 0.8,
+    "observation_days": 365,
+    "prediction_days": 90,
+    "training_snapshots": [
+        366,
+        396,
+        426
+    ],
+    "validation_snapshot": 516,
+    "test_snapshot": 622,
+    "status": "experimental",
+    "training_samples": 7491,
+    "validation_samples": 2498,
+    "test_samples": 2499,
+    "validation_metrics": {
+        "roc_auc": 0.9118943927108781,
+        "average_precision": 0.4873328050332939,
+        "f1": 0.5190156599552572
+    },
+    "test_metrics": {
+        "accuracy": 0.8991596638655462,
+        "precision": 0.34523809523809523,
+        "recall": 0.5,
+        "f1": 0.4084507042253521,
+        "roc_auc": 0.893287603510073,
+        "average_precision": 0.3473555652973296
+    }
+}

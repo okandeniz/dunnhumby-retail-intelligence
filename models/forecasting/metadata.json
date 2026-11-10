@@ -1,0 +1,34 @@
+{
+    "model_name": "XGBoost + Log Target",
+    "model_version": "xgb_log_target_v1",
+    "forecast_horizon": 30,
+    "products": 457,
+    "training_observations": 7749,
+    "test_observations": 1371,
+    "training_target_end_day": 621,
+    "last_observed_day": 711,
+    "numeric_features": 10,
+    "categorical_features": 3,
+    "feature_names": [
+        "sales_last_7d",
+        "sales_last_30d",
+        "sales_prev_30d",
+        "sales_last_60d",
+        "rolling_std_30d",
+        "active_days_last_30d",
+        "baskets_last_30d",
+        "sales_trend_30d",
+        "days_since_last_sale",
+        "week_position",
+        "PRODUCT_ID",
+        "DEPARTMENT",
+        "COMMODITY_DESC"
+    ],
+    "test_metrics": {
+        "MAE": 24.87157670223174,
+        "RMSE": 53.54425115642518,
+        "WAPE (%)": 27.33162204132712,
+        "Bias": -7.497070920534764,
+        "Bias (%)": -8.238605508218308
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "model_name": "Balanced Logistic Regression",
+    "features": [
+        "purchase_frequency",
+        "avg_basket_value",
+        "recency",
+        "baskets_last_30d",
+        "baskets_prev_30d",
+        "has_purchase_365d"
+    ],
+    "threshold": 0.8,
+    "observation_days": 365,
+    "prediction_days": 90,
+    "training_snapshots": [
+        366,
+        396,
+        426
+    ],
+    "validation_snapshot": 516,
+    "test_snapshot": 622,
+    "status": "experimental"
+}
