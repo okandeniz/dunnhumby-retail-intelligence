@@ -22,6 +22,7 @@ dashboard = [
     "pandas>=2.2,<3.0",
     "requests>=2.32,<3",
     "python-dotenv>=1,<2",
+    "streamlit-searchbox>=0.1.24",
 ]
 dev = ["pytest>=8,<10", "httpx2", "ruff>=0.11,<1", "xgboost==3.2.0"]
 research = [

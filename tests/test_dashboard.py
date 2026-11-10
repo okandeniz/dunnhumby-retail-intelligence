@@ -29,7 +29,15 @@ def test_dashboard_and_editable_random_fill(monkeypatch):
         str(store.ROOT / "streamlit_app/app.py"), default_timeout=40
     ).run()
     assert not at.exception and not at.warning
-    assert len(at.tabs) == 7
+    forecast_page = next(
+        tab for tab in at.tabs if tab.label == "Product Demand Forecasting"
+    )
+    assert [tab.label for tab in forecast_page.tabs] == [
+        "Next 30-day forecast",
+        "Actual and predicted demand",
+        "Forecast by store",
+    ]
+    assert all(len(tab.get("plotly_chart")) == 1 for tab in forecast_page.tabs)
     category = next(s for s in at.selectbox if s.label == "Category")
     category.select("GROCERY / CHEESE").run()
     available = client.get(

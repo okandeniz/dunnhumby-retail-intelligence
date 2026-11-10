@@ -82,7 +82,9 @@ The original pipeline selected 457 eligible products using data through day 531.
 | Last 30 Days Baseline | 26.671 | 56.089 | 29.309% |
 | Last 60-Day Average Baseline | 25.803 | 53.711 | 28.355% |
 
-The final origin is dataset day 711. The future bar chart compares **one total per method for days 712–741 across all stores**. For bananas (1082185), XGBoost predicts **1,241.66 units**. The last 30 days give 1,565 units. Half of the last 60 days gives 1,554 units. The history chart shows actual sales and all three estimates for each test period. Actual sales after day 711 are unavailable.
+The final origin is dataset day 711. The forecast cards show **one total per method for days 712–741 across all stores**. For bananas (1082185), XGBoost predicts **1,241.66 units**. The last 30 days give 1,565 units. Half of the last 60 days gives 1,554 units. In **Next 30-day forecast**, a dashed line connects the last observed total to the XGBoost forecast. A diamond shows the average of the three previous 30-day totals. Switch to **Actual and predicted demand** to compare actual sales with all three methods during the test periods. Actual sales after day 711 are unavailable.
+
+**Forecast by store** allocates the selected product’s 30-day XGBoost total using each store’s share of positive unit sales in the preceding 180 days. The chart shows the ten largest estimates and the table includes every store that sold the product in that window. Across the three historical test periods, the sum of absolute store-product errors was 93.49% of actual units (WAPE), including sales at stores with no units in the lookback window.
 
 ## Architecture and files
 
@@ -128,16 +130,17 @@ Keep matching files from the same project run. A code-only copy may be missing l
 | `data/processed/campaign/` | `campaign_spending.csv`, `campaign_type_summary.csv`, `chi_square_results.json`, `mann_whitney_results.csv`, `gee_redemption_summary.csv`, `campaign_analysis_metadata.json` |
 | `models/recommendation/` | Keep the `user_based`, `item_based`, `content_based`, `association_rules`, `svd` and `nmf` subfolders with their catalogs, ID mappings, fitted neighbors, factors, rules and purchase history |
 | `data/processed/recommendation/` | `model_comparison_stage4.csv`, `evaluation_metadata.json`, `customer_seed_products.json` |
-| `data/processed/forecasting/` | `eligible_product_lookup.csv`, `future_forecast.csv`, `test_predictions.csv`, `final_test_comparison.csv`. Keep `daily_product_series.csv` for the model test and `forecast_split_summary.csv` for the split details |
+| `data/processed/forecasting/` | `eligible_product_lookup.csv`, `future_forecast.csv`, `store_sales_180d.csv`, `test_predictions.csv`, `final_test_comparison.csv`. Keep `daily_product_series.csv` for the model test and `forecast_split_summary.csv` for the split details |
 | `models/forecasting/` | `metadata.json`. The model test also loads `xgb_log_target.joblib` |
 
 The API serves the saved future forecast to keep product selection fast. The test suite also rebuilds historical features and runs the fitted XGBoost model to check the same banana forecast.
 
-To restore the two dashboard inputs from the original `data/raw/transaction_data.csv` and the other files above, run these commands once after installing the environment. Neither command fits a model.
+To restore the dashboard inputs from the original `data/raw/transaction_data.csv` and the other files above, run these commands once after installing the environment.
 
 ```powershell
 uv run --no-sync python -m src.pipelines.export_churn_test_features
 uv run --no-sync python -m src.pipelines.export_recommendation_seeds
+uv run --no-sync python -m src.pipelines.export_store_sales
 ```
 
 ## Local installation and configuration
@@ -185,6 +188,7 @@ The interactive docs show request fields, response types and validation rules. A
 | GET | `/recommendations/products/{product_id}`, `/recommendations/customers/{customer_id}` | Ranked products for a `model` and `top_n` (1–50) |
 | GET | `/forecasting/categories`, `/forecasting/products?category=...` | Categories and their eligible products |
 | GET | `/forecasting/products/{product_id}`, `/forecasting/products/{product_id}/history` | Future total or test-period results |
+| GET | `/forecasting/products/{product_id}/stores` | Estimated units by store and the historical sales shares used to allocate them |
 | GET | `/forecasting/evaluation` | Overall test scores for the three methods |
 
 ## Testing and maintenance
@@ -206,4 +210,4 @@ uv export --frozen --no-default-groups --group api --group dashboard --no-emit-p
 
 ## Limitations and next steps
 
-All five tabs use one historical data release. Customer coverage changes by module and time window. The demand forecast covers eligible products across stores and has no daily or store-level breakdown. Campaign results describe associations. A later release could add a new time period, check whether the churn model still works well, and measure forecast error when new actual sales arrive. Restart the services after replacing artifact files so that both caches use the same release.
+All five tabs use one historical data release. Customer coverage changes by module and time window. The demand model estimates 30-day product totals across stores. The store view assumes recent sales shares will continue. Campaign results describe associations. A later release could add a new time period, check whether the churn model still works well, and measure forecast error when new actual sales arrive. Restart the services after replacing artifact files so that both caches use the same release.

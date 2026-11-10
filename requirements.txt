@@ -309,6 +309,10 @@ starlette==1.10.0 ; sys_platform == 'linux' or sys_platform == 'win32' \
 streamlit==1.67.0 ; sys_platform == 'linux' or sys_platform == 'win32' \
     --hash=sha256:58159dae1199212250bfa5fbba0740996129003266c2c37d465151ef76c48f3b \
     --hash=sha256:f29da87c443bfbdfc52738616e3d65745d438e718da8faf69e2be0da1e52ce64
+    # via streamlit-searchbox
+streamlit-searchbox==0.1.24 ; sys_platform == 'linux' or sys_platform == 'win32' \
+    --hash=sha256:52ebae43acf8a5c7b6a0e681efc58170c880da308c846dd2db907da84633e468 \
+    --hash=sha256:b6009c368812feea0dd211f03c9cc5cc85b540b0d0a57165bb2885f67d6a8a3d
 threadpoolctl==3.8.0 ; sys_platform == 'linux' or sys_platform == 'win32' \
     --hash=sha256:01080674ad7ac6182429c918a79de92da789bb448acc02fc0b620b1abd6b6137 \
     --hash=sha256:f1b49c82704d50f13ffae019c727b0fa4f6791a58f48f06a09c45face1be66da

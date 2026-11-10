@@ -3,8 +3,9 @@
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from charts import AVERAGE, BLUE, LAST, future_chart, history_chart, style
+from charts import AVERAGE, GREEN, LAST, history_chart, sales_forecast_chart, style
 from client import ApiError, read, request
+from streamlit_searchbox import st_searchbox
 
 
 def metrics(entries: dict) -> None:
@@ -59,7 +60,7 @@ def crm() -> None:
             x=key,
             y="segment",
             orientation="h",
-            color_discrete_sequence=[BLUE],
+            color_discrete_sequence=[GREEN],
             labels={key: measure, "segment": "RFM segment"},
             title=measure + " by segment",
         )
@@ -95,7 +96,13 @@ def crm() -> None:
         st.session_state.crm_selection = cid
     if st.session_state.get("crm_selection") == cid:
         person = read(f"/crm/customers/{cid}")
-        st.write(f"**{person['segment']}** · {person['cluster_name']}")
+        segment, group = st.columns(2)
+        with segment.container(border=True):
+            st.caption("RFM segment")
+            st.write(f"**{person['segment']}**")
+        with group.container(border=True):
+            st.caption("Shopping group")
+            st.write(f"**{person['cluster_name'] or 'No group assigned'}**")
         metrics(
             {
                 "Days since last purchase": person["recency"],
@@ -118,18 +125,28 @@ def prediction(result: dict) -> None:
     st.subheader("Model prediction")
     if result["customer_id"] is not None:
         st.write(f"Customer {result['customer_id']}")
-    metrics(
-        {
-            "Predicted status": result["status"],
-            "Churn probability": f"{result['probability']:.1%}",
-            "Decision threshold": f"{result['threshold']:.0%}",
-        }
-    )
+    is_churn = result["status"] == "Churn"
+    source = "id" if result["customer_id"] is not None else "manual"
+    with st.container(key=f"{'churn' if is_churn else 'active'}_{source}_cards"):
+        metrics(
+            {
+                "Predicted status": result["status"],
+                "Churn probability": f"{result['probability']:.1%}",
+                "Decision threshold": f"{result['threshold']:.0%}",
+            }
+        )
     st.caption(
         "The model predicts churn when the chance of no purchase in the next 90 days reaches the threshold."
     )
     if result["observed"] is not None:
         st.write(f"Observed outcome in days 622–711: **{result['observed']}**")
+    with st.container(border=True):
+        st.markdown("**Suggested action**")
+        st.write(
+            "Consider a reminder or an offer on a product this customer bought before. Check whether they return in the next 90 days."
+            if is_churn
+            else "Keep the usual contact schedule. Suggest products that fit this customer's shopping habits and watch for longer gaps between visits."
+        )
 
 
 def churn_id() -> None:
@@ -199,10 +216,21 @@ def churn() -> None:
         "This experimental model uses a year of shopping history to estimate the chance of no purchase for 90 days."
     )
     by_id, by_hand = st.tabs(["Customer ID Prediction", "Manual Prediction"])
-    with by_id, st.container(key="customer_risk"):
+    with by_id:
         panel(churn_id)
-    with by_hand, st.container(key="manual_risk"):
+    with by_hand:
         panel(manual)
+
+
+def display_p_value(value: float) -> str:
+    """Keep small probabilities readable without rounding them to zero."""
+    return "< 0.000001" if value < 0.000001 else f"{value:.6f}".rstrip("0").rstrip(".")
+
+
+def analysis_note(title: str, text: str) -> None:
+    with st.container(border=True):
+        st.markdown(f"**{title}**")
+        st.write(text)
 
 
 def campaigns() -> None:
@@ -218,44 +246,65 @@ def campaigns() -> None:
             "Average baskets": f"{selected['avg_baskets']:.1f}",
         }
     )
-    st.subheader("Across all campaigns")
+    analysis_note(
+        "How to read this campaign",
+        f"Of the {selected['assignments']:,} households assigned to this campaign, "
+        f"{selected['redeemed']:,} used at least one coupon. The averages cover all assigned households during the campaign.",
+    )
+    st.subheader("Coupon use across all campaigns")
     study = read("/campaigns/study")
+    rates = pd.DataFrame(study["types"])
+    rates["campaign_type"] = rates.DESCRIPTION.str.replace("Type", "Type ", regex=False)
     fig = px.bar(
-        study["types"],
-        x="DESCRIPTION",
+        rates,
+        x="campaign_type",
         y="redemption_rate_pct",
-        text_auto=".1f",
-        color_discrete_sequence=[BLUE],
-        title="Coupon use by campaign type",
+        color_discrete_sequence=[GREEN],
+        title="How often did households use a campaign coupon?",
+        custom_data=["redeemed_assignments", "targeted_assignments"],
         labels={
-            "DESCRIPTION": "Campaign type",
-            "redemption_rate_pct": "Assignments with a redemption (%)",
+            "campaign_type": "Type of campaign received",
+            "redemption_rate_pct": "Share of assignments with coupon use",
         },
     )
+    fig.update_traces(
+        texttemplate="%{y:.1f}%",
+        textposition="outside",
+        cliponaxis=False,
+        hovertemplate="%{x}<br>Coupon used in %{customdata[0]:,} of %{customdata[1]:,} assignments (%{y:.1f}%)<extra></extra>",
+    )
+    fig.update_yaxes(ticksuffix="%", range=[0, rates.redemption_rate_pct.max() * 1.18])
     chart(style(fig))
-    st.write(
-        f"The chi-square test compares coupon use across types (χ² = {study['chi2']:.2f}, "
-        f"df = {study['degrees_of_freedom']}, p = {study['p_value']:.2g}). "
-        f"The link is statistically significant at 5%. Its size is small (Cramér’s V = {study['cramers_v']:.2f})."
+    analysis_note(
+        "What do the bars tell us?",
+        "Each household counts once for each campaign it received. A taller bar means a larger share used a coupon. "
+        f"The chi-square test finds a difference across types (p-value {display_p_value(study['p_value'])}). "
+        f"The link is small (Cramér’s V = {study['cramers_v']:.2f}).",
     )
     tests = pd.DataFrame(study["spending_tests"]).rename(
         columns={
             "campaign_type": "Type",
-            "median_redeemed": "Used a coupon",
-            "median_not_redeemed": "Did not use a coupon",
+            "median_redeemed": "Median spending with coupon use",
+            "median_not_redeemed": "Median spending without coupon use",
             "p_adjusted": "Adjusted p-value",
             "cliffs_delta": "Cliff’s delta",
         }
     )
     st.subheader("Spending during the campaign")
-    st.write(
-        "In all three types, customers who used a coupon had higher median spending. The table shows two-sided Mann–Whitney tests with a Holm adjustment."
+    analysis_note(
+        "How did spending differ?",
+        "In each campaign type, households that used a coupon had higher median spending. The median is the middle spending value. "
+        "The Mann–Whitney test compares spending in the two groups. We adjusted the p-values because we made three comparisons (Holm method). "
+        "An adjusted p-value below 0.05 gives evidence of a difference. "
+        "A positive Cliff’s delta means the household that used a coupon usually spent more when we compare pairs from the two groups.",
     )
-    tests["Adjusted p-value"] = tests["Adjusted p-value"].map("{:.2g}".format)
+    tests["Adjusted p-value"] = tests["Adjusted p-value"].map(display_p_value)
     st.dataframe(tests, hide_index=True)
-    with st.expander("How do repeated visits affect the comparison?"):
-        st.write(
-            "A household can receive more than one campaign. The GEE model groups records by household. It compares the odds of using a coupon with TypeB as the reference."
+    with st.expander("What if a household received several campaigns?"):
+        analysis_note(
+            "Compare each type with Type B",
+            "The GEE model keeps records from the same household together. An odds ratio above 1 means the odds of using a coupon were higher than in Type B. "
+            "If the 95% interval includes 1, the data are also consistent with equal odds.",
         )
         estimates = pd.DataFrame(study["redemption_estimates"])
         estimates["Campaign type"] = estimates.term.str.extract(r"\[T\.(.*?)\]")[0]
@@ -267,7 +316,7 @@ def campaigns() -> None:
                 "p_value": "p-value",
             }
         )
-        estimates["p-value"] = estimates["p-value"].map("{:.2g}".format)
+        estimates["p-value"] = estimates["p-value"].map(display_p_value)
         st.dataframe(
             estimates[
                 [
@@ -280,9 +329,24 @@ def campaigns() -> None:
             ],
             hide_index=True,
         )
-    st.caption(
-        "These groups come from observed shopping records. Customer habits may explain some differences. The study cannot measure a causal effect."
+    analysis_note(
+        "What can we conclude?",
+        "The records show a link between coupon use and spending. Customers who already shop more may also use more coupons. "
+        "These comparisons cannot tell us how much extra spending a campaign caused.",
     )
+
+
+METRIC_GUIDE = {
+    "Precision@10": "For each customer, count how many of the 10 suggestions they later bought for the first time. Divide by 10, then average across customers. Two matches out of 10 give 20%.",
+    "Recall@10": "Of the new products a customer later bought, how many appeared in their list? Two matches out of five new purchases give 40%. The chart shows the average across customers.",
+    "Hit Rate@10": "What share of customers bought at least one new product from their list? If 30 of 100 customers bought a suggested product, the hit rate is 30%.",
+    "Coverage@10": "What share of the product catalog appeared in at least one customer's list? A product counts once, even if many customers saw it. Higher coverage means a wider range of suggestions.",
+}
+
+
+def product_options(query: str, model: str) -> list[tuple[str, int]]:
+    rows = read("/recommendations/products", model=model, q=query[:100])
+    return [(row["product_label"], row["PRODUCT_ID"]) for row in rows]
 
 
 def recommendations() -> None:
@@ -295,19 +359,14 @@ def recommendations() -> None:
     if mode == "Customer":
         entity = st.number_input("Customer ID", min_value=1, key="rec_customer")
     else:
-        query = st.text_input(
-            "Search by product name or ID",
-            help="Enter more letters to narrow the first 50 matches.",
+        entity = st_searchbox(
+            product_options,
+            model=model,
+            label="Product",
+            placeholder="Choose a product or type its name or ID",
+            default_options=product_options("", model),
+            key=f"rec_product_{model}",
         )
-        choices = {
-            r["PRODUCT_ID"]: r["product_label"]
-            for r in read("/recommendations/products", model=model, q=query)
-        }
-        entity = st.selectbox(
-            "Product", list(choices), format_func=choices.get, key="rec_product"
-        )
-        if not choices:
-            st.info("No products match this search.")
     if st.button("Show recommendations", type="primary", disabled=entity is None):
         st.session_state.rec_selection = (mode, model, entity, count)
     if st.session_state.get("rec_selection") == (mode, model, entity, count):
@@ -338,19 +397,73 @@ def recommendations() -> None:
         }
     )
     metric = st.selectbox("Comparison metric", list(frame.columns[1:]))
+    analysis_note(metric, METRIC_GUIDE[metric])
     fig = px.bar(
         frame.sort_values(metric),
         x=metric,
         y="Model",
         orientation="h",
-        color_discrete_sequence=[BLUE],
+        color_discrete_sequence=[GREEN],
         title=f"{metric} by method",
     )
     fig.update_xaxes(tickformat=".0%")
     chart(style(fig))
-    st.dataframe(frame, hide_index=True)
+    st.dataframe(
+        frame,
+        hide_index=True,
+        column_config={
+            name: st.column_config.NumberColumn(format="percent", help=guide)
+            for name, guide in METRIC_GUIDE.items()
+        },
+    )
+    st.caption("NMF training did not confirm convergence.")
+
+
+def store_forecasts(product_id: int) -> None:
+    try:
+        estimates = read(f"/forecasting/products/{product_id}/stores")
+    except ApiError as exc:
+        st.warning(str(exc))
+        return
+    if not estimates:
+        st.info("This product has no store sales history for the last 180 days.")
+        return
+    st.write(
+        "Each store gets a share of the product’s 30-day forecast based on how many units "
+        "it sold in the last 180 days. Only stores that sold this product in that period are shown."
+    )
+    frame = pd.DataFrame(estimates).rename(
+        columns={
+            "STORE_ID": "Store ID",
+            "units_last_180d": "Units sold in 180 days",
+            "sales_share": "Share of sales",
+            "estimated_units": "Estimated units",
+        }
+    )
+    top = frame.head(10).copy()
+    top["Store"] = "Store " + top["Store ID"].astype(str)
+    fig = px.bar(
+        top,
+        x="Estimated units",
+        y="Store",
+        orientation="h",
+        color_discrete_sequence=[GREEN],
+        title=f"30-day estimates for the top {len(top)} stores",
+        text_auto=",.1f",
+    )
+    fig.update_yaxes(title=None, autorange="reversed")
+    chart(style(fig))
     st.caption(
-        "Precision counts hits in the top 10. Recall measures how many new purchases appeared in the list. Hit rate counts customers with a hit. Coverage measures how much of the catalog appeared. NMF training did not confirm convergence."
+        "Store estimates are approximate. In three past 30-day periods, store-level "
+        "errors were large, especially compared with the forecast for all stores together."
+    )
+    st.dataframe(
+        frame,
+        hide_index=True,
+        column_config={
+            "Share of sales": st.column_config.NumberColumn(format="percent"),
+            "Estimated units": st.column_config.NumberColumn(format="%.2f"),
+        },
     )
 
 
@@ -379,6 +492,9 @@ def forecasting() -> None:
         key="forecast_product",
     )
     row = read(f"/forecasting/products/{prod}")
+    st.subheader(
+        f"Forecast totals for days {row['forecast_start_day']}–{row['forecast_end_day']}"
+    )
     metrics(
         {
             "XGBoost + Log Target": f"{row['xgb_prediction']:,.2f}",
@@ -386,12 +502,22 @@ def forecasting() -> None:
             AVERAGE: f"{row['baseline_avg_60d']:,.1f}",
         }
     )
-    chart(future_chart(row))
-    st.caption(
-        "Each bar shows one total for days 712–741. Actual sales for this period are unavailable."
+    st.caption("Actual sales for this period are unavailable.")
+    history = read(f"/forecasting/products/{prod}/history")
+    future_tab, history_tab, store_tab = st.tabs(
+        ["Next 30-day forecast", "Actual and predicted demand", "Forecast by store"]
     )
-    chart(history_chart(read(f"/forecasting/products/{prod}/history")))
-    st.subheader("Test results across all eligible products")
+    with future_tab:
+        chart(sales_forecast_chart(history, row))
+        st.caption(
+            "Each point covers 30 days. The dashed line leads to the model forecast. "
+            "The diamond shows average sales over the three previous periods."
+        )
+    with history_tab:
+        chart(history_chart(history))
+    with store_tab:
+        store_forecasts(prod)
+    st.subheader("Test results for product totals across all stores")
     results = pd.DataFrame(read("/forecasting/evaluation")).rename(
         columns={"model": "Method", "wape_pct": "WAPE (%)"}
     )

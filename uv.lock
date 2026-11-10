@@ -424,6 +424,7 @@ dashboard = [
     { name = "python-dotenv" },
     { name = "requests" },
     { name = "streamlit" },
+    { name = "streamlit-searchbox" },
 ]
 dev = [
     { name = "httpx2" },
@@ -477,6 +478,7 @@ dashboard = [
     { name = "python-dotenv", specifier = ">=1,<2" },
     { name = "requests", specifier = ">=2.32,<3" },
     { name = "streamlit", specifier = ">=1.46,<2" },
+    { name = "streamlit-searchbox", specifier = ">=0.1.24" },
 ]
 dev = [
     { name = "httpx2" },
@@ -2313,6 +2315,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/38/47/ea7596bda2d303370b6129688e09a44e5faa64e5b9d86cba4d89ae60a16f/streamlit-1.67.0.tar.gz", hash = "sha256:58159dae1199212250bfa5fbba0740996129003266c2c37d465151ef76c48f3b", size = 10672027, upload-time = "2026-11-05T19:53:54.821Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/58/c4/59f60e52e8f679488bf0caecbe3a8469af1d3d72c352bb0f306915a3e667/streamlit-1.67.0-py3-none-any.whl", hash = "sha256:f29da87c443bfbdfc52738616e3d65745d438e718da8faf69e2be0da1e52ce64", size = 11235773, upload-time = "2026-11-05T19:53:51.688Z" },
+]
+
+[[package]]
+name = "streamlit-searchbox"
+version = "0.1.24"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "streamlit" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/46/c1/b037f76f7d6da73af6311720df3c56ed534616572da4261c0dea1e37110e/streamlit_searchbox-0.1.24.tar.gz", hash = "sha256:b6009c368812feea0dd211f03c9cc5cc85b540b0d0a57165bb2885f67d6a8a3d", size = 844522, upload-time = "2025-12-23T07:44:55.367Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4e/4d/cd7f4ca601f700b88a2ddf9b4dff9595ca15c77ab1c786b894d0668fe319/streamlit_searchbox-0.1.24-py3-none-any.whl", hash = "sha256:52ebae43acf8a5c7b6a0e681efc58170c880da308c846dd2db907da84633e468", size = 847934, upload-time = "2025-12-23T07:44:53.885Z" },
 ]
 
 [[package]]

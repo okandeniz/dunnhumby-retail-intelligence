@@ -4,14 +4,14 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-BLUE = "#689EB8"
-CORAL = "#FF5A60"
-GRAY = "#A79B94"
+GREEN = "#0D6628"
+LEAF = "#6EAD50"
+RED = "#FE0000"
 XGB = "XGBoost + Log Target"
 LAST = "Last 30 Days Baseline"
 AVERAGE = "Last 60-Day Average Baseline"
 ACTUAL = "Actual Sales"
-COLORS = {XGB: CORAL, LAST: GRAY, AVERAGE: GRAY, ACTUAL: BLUE}
+COLORS = {XGB: RED, LAST: LEAF, AVERAGE: LEAF, ACTUAL: GREEN}
 
 
 def style(fig: go.Figure) -> go.Figure:
@@ -20,37 +20,10 @@ def style(fig: go.Figure) -> go.Figure:
         plot_bgcolor="#FFFFFF",
         paper_bgcolor="#FFFFFF",
         margin={"t": 55, "l": 20, "r": 20, "b": 20},
-        font_color="#243640",
+        font_color="#203025",
         legend={"orientation": "h", "yanchor": "top", "y": -0.2, "title_text": ""},
     )
     return fig
-
-
-def future_chart(row: dict) -> go.Figure:
-    frame = pd.DataFrame(
-        {
-            "Method": [XGB, LAST, AVERAGE],
-            "Quantity": [
-                row["xgb_prediction"],
-                row["baseline_last_30d"],
-                row["baseline_avg_60d"],
-            ],
-        }
-    )
-    fig = px.bar(
-        frame,
-        x="Quantity",
-        y="Method",
-        orientation="h",
-        color="Method",
-        color_discrete_map=COLORS,
-        text_auto=",.1f",
-        title=f"Demand for days {row['forecast_start_day']}–{row['forecast_end_day']}",
-        labels={"Quantity": "Units across all stores"},
-    )
-    fig.update_layout(showlegend=False, yaxis_title=None)
-    fig.update_yaxes(autorange="reversed")
-    return style(fig)
 
 
 def historical_frame(rows: list[dict]) -> pd.DataFrame:
@@ -70,6 +43,59 @@ def historical_frame(rows: list[dict]) -> pd.DataFrame:
             value_name="Units",
         )
     )
+
+
+def sales_forecast_chart(history: list[dict], forecast: dict) -> go.Figure:
+    """Connect observed 30-day totals to the next period's saved model estimate."""
+    periods = [row["forecast_period"] for row in history]
+    actuals = [row["actual"] for row in history]
+    future = f"{forecast['forecast_start_day']}-{forecast['forecast_end_day']}"
+    fig = go.Figure()
+    fig.add_scatter(
+        x=periods,
+        y=actuals,
+        name="Actual sales",
+        mode="lines+markers",
+        line={"color": GREEN},
+        hovertemplate="%{y:,.0f} units<extra>Actual sales</extra>",
+    )
+    fig.add_scatter(
+        x=[periods[-1], future],
+        y=[actuals[-1], forecast["xgb_prediction"]],
+        name="XGBoost forecast",
+        mode="lines+markers",
+        line={"color": RED, "dash": "dash"},
+        marker={"size": [0, 10]},
+        hovertemplate=[
+            "%{y:,.0f} units<extra>Last actual sales</extra>",
+            "%{y:,.2f} units<extra>XGBoost forecast</extra>",
+        ],
+    )
+    fig.add_scatter(
+        x=[future],
+        y=[sum(actuals) / len(actuals)],
+        name="Average of past 3 periods",
+        mode="markers",
+        marker={
+            "symbol": "diamond-open",
+            "size": 14,
+            "color": LEAF,
+            "line": {"width": 2},
+        },
+        hovertemplate="%{y:,.2f} units<extra>Past 3-period average</extra>",
+    )
+    fig.update_layout(
+        title="Sales history and next 30-day forecast",
+        xaxis={
+            "title": "30-day period (dataset days)",
+            "type": "category",
+            "tickmode": "array",
+            "tickvals": [*periods, future],
+            "ticktext": [*periods, f"{future} (forecast)"],
+        },
+        yaxis_title="Units across all stores",
+    )
+    return style(fig)
 
 
 def history_chart(rows: list[dict]) -> go.Figure:

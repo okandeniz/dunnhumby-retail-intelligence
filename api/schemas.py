@@ -70,6 +70,13 @@ class Forecast(Product):
     baseline_avg_60d: float
 
 
+class StoreEstimate(BaseModel):
+    STORE_ID: int
+    units_last_180d: Count
+    sales_share: Probability
+    estimated_units: float
+
+
 class Historical(BaseModel):
     forecast_period: str
     actual: float

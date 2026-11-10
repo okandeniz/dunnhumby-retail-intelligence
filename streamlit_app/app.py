@@ -7,10 +7,15 @@ st.set_page_config(page_title="Retail Intelligence", layout="wide")
 st.markdown(
     """
 <style>
-h1, h2 { color: #365f73; }
-h1 { border-bottom: 4px solid #689EB8; padding-bottom: .45rem; }
-[data-testid="stMetric"] { background: white; border-top: 3px solid #689EB8; border-radius: .6rem; }
-.st-key-customer_risk [data-testid="stMetric"], .st-key-manual_risk [data-testid="stMetric"] { border-top-color: #FF5A60; }
+h1, h2, h3 { color: #0D6628; }
+h1 { border-bottom: 4px solid #6EAD50; padding-bottom: .45rem; }
+[data-testid="stMetric"] { background: white; border-top: 3px solid #6EAD50; border-radius: .6rem; }
+.st-key-churn_id_cards [data-testid="stMetric"], .st-key-churn_manual_cards [data-testid="stMetric"] {
+    border-top-color: #FE0000;
+}
+:is(.st-key-churn_id_cards, .st-key-churn_manual_cards) [data-testid="stMetric"] * {
+    color: #FE0000;
+}
 </style>
 """,
     unsafe_allow_html=True,

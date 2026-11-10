@@ -11,6 +11,7 @@ from api import store
 from api.main import app
 from api.schemas import Features
 from src.models.churn import FEATURE_COLUMNS
+from src.pipelines.export_store_sales import export as export_store_sales
 from src.pipelines.forecast_inference import run_forecast_inference
 from streamlit_app.charts import historical_frame
 
@@ -208,6 +209,28 @@ def test_forecast_api_and_chart_data():
     assert len(frame) == 12 and frame.Method.nunique() == 4
     assert frame.forecast_period.unique().tolist() == ["622-651", "652-681", "682-711"]
     assert len(client.get("/forecasting/evaluation").json()) == 3
+
+
+def test_store_estimates_use_only_prior_sales_of_each_product(tmp_path, monkeypatch):
+    from api.routes import forecasting
+
+    folder = tmp_path / "data/processed/forecasting"
+    folder.mkdir(parents=True)
+    raw = tmp_path / "data/raw"
+    raw.mkdir()
+    (folder / "future_forecast.csv").write_text(
+        "PRODUCT_ID,DAY,xgb_prediction\n1,711,20\n2,711,10\n"
+    )
+    (raw / "transaction_data.csv").write_text(
+        "PRODUCT_ID,STORE_ID,DAY,QUANTITY\n1,8,531,100\n1,8,532,3\n"
+        "1,8,640,-5\n1,9,711,7\n1,9,712,100\n2,8,531,20\n"
+    )
+    export_store_sales(tmp_path)
+    monkeypatch.setattr(forecasting, "DIRECTORY", folder)
+    rows = client.get("/forecasting/products/1/stores").json()
+    assert [(r["STORE_ID"], r["estimated_units"]) for r in rows] == [(9, 14), (8, 6)]
+    assert client.get("/forecasting/products/2/stores").json() == []
+    assert client.get("/forecasting/products/3/stores").status_code == 404
 
 
 def test_saved_xgboost_inference():

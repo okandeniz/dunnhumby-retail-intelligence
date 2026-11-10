@@ -60,5 +60,6 @@ data/external/
 outputs/
 logs/
 
-# Local command notes
+# Local project notes
 /terminal_commands.txt
+/project_tree.txt
